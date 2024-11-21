@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>경제 퀴즈</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #edf6fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #phone-frame {
+      padding: 20px 10px;
+      border-radius: 30px;
+      width: 360px;
+      height: 360px;
+      position: relative;
+    }
+
+    #screen {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 20px;
+      width: 100%;
+      height: calc(100% - 60px);
+      text-align: center;
+      position: relative;
+    }
+
+    #question-number {
+      color: #007bff;
+      font-weight: bold;
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+
+    #question {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    #choices {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    #choices button {
+      width: 45%;
+      padding: 15px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: linear-gradient(145deg, #d6e6f0, #ffffff);
+      box-shadow: 3px 3px 6px #a8b8c3, -3px -3px 6px #ffffff;
+      color: #333;
+      transition: transform 0.2s;
+    }
+
+    #choices button:active {
+      transform: translateY(2px);
+      box-shadow: inset 3px 3px 6px #a8b8c3, inset -3px -3px 6px #ffffff;
+    }
+
+    .correct {
+      background: linear-gradient(145deg, #c8f7c5, #ffffff);
+    }
+
+    .incorrect {
+      background: linear-gradient(145deg, #f5d4d6, #ffffff);
+    }
+
+    #final-score {
+      display: none;
+      margin-top: 14px;
+    }
+
+    #redirect-button {
+      display: none;
+      background-color: #004c9e;
+      color: white;
+      font-size: 14px;
+      padding: 10px 20px;
+      cursor: pointer;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+
+    #credit {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: gray;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="phone-frame">
+  <div id="screen">
+    <div id="question-number">문제 1</div>
+    <div id="question">퀴즈 질문이 여기에 표시됩니다.</div>
+    <div id="choices">
+      <button class="correct" onclick="selectAnswer(true)">O</button>
+      <button class="incorrect" onclick="selectAnswer(false)">X</button>
+    </div>
+    <div id="result"></div>
+    <div id="final-score"></div>
+    <a id="redirect-button" href="https://kiss.kstudy.com/Subject?code1=02&code2=05" target="_blank">경제공부하러가기!</a>
+    <div id="credit">한국학술정보</div>
+  </div>
+</div>
+
+<script>
+  const questions = [
+    { question: "2025년은 대한민국 사상 처음으로 최저 시급 10,000원을 초과했다", answer: true },
+    { question: "금리 0.25%P 인하 하는 것을 '<a href='https://kiss.kstudy.com/Detail/Ar?key=3770164#' target='_blank'>빅컷</a>'이라고 한다", answer: false },
+    { question: "엔비디아에서 새로 출시하는 AI칩의 이름은 '블랙홀'이다", answer: false },
+    { question: "비트코인 <a href='https://kiss.kstudy.com/Detail/Ar?key=4072125' target='_blank'>ETF</a>가 승인된 적이 있다?", answer: true },
+    { question: "2024년 트렌드 코리아에 소개된 키워드 '<a href='https://kiss.kstudy.com/Detail/Ar?key=4067971' target='_blank'>디토소비</a>'는 유명인의 취향과 유행을 그대로 따라하는 소비를 뜻한다", answer: true },
+    { question: "2024년 FED는 연속으로 동결했다", answer: false },
+    { question: "일정 기간동안 물가가 연속적으로 상승하는 것을 '<a href='https://kiss.kstudy.com/Search/Result?field=0&query=%EC%9D%B8%ED%94%8C%EB%A0%88%EC%9D%B4%EC%85%98&isDetail=N' target='_blank'>인플레이션</a>'이라고 한다", answer: true },
+    { question: "전 세계적으로 가장 많이 사용된 SNS플랫폼은 '<a href='https://kiss.kstudy.com/Search/Result?field=0&query=%ED%8B%B1%ED%86%A1&isDetail=N#' target='_blank'>인스타그램</a>'이다", answer: false },
+    { question: "Fed 기준금리는 한 해에 여러 번 조정될 수 있다?", answer: true },
+    { question: "'<a href='https://kiss.kstudy.com/Search/Result?field=0&query=%EC%83%9D%EC%95%A0%EC%A3%BC%EA%B8%B0%EA%B0%80%EC%84%A4&isDetail=N' target='_blank'>생애주기가설</a>'은 개인이 평생 동안 일정한 수준의 소비를 유지하기 위해 현재 소비에만 집중하면 된다", answer: false }
+  ];
+
+  let currentQuestionIndex = 0;
+  let score = 0;
+
+  const questionNumberElement = document.getElementById('question-number');
+  const questionElement = document.getElementById('question');
+  const finalScoreElement = document.getElementById('final-score');
+  const redirectButton = document.getElementById('redirect-button');
+
+  function loadQuestion() {
+    const currentQuestion = questions[currentQuestionIndex];
+    questionNumberElement.textContent = `문제 ${currentQuestionIndex + 1}`;
+    questionElement.innerHTML = currentQuestion.question;
+  }
+
+  function selectAnswer(selectedAnswer) {
+    const currentQuestion = questions[currentQuestionIndex];
+    if (selectedAnswer === currentQuestion.answer) {
+      alert('정답입니다!');
+      score++;
+    } else {
+      alert('오답입니다.');
+    }
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+      setTimeout(loadQuestion, 1000);
+    } else {
+      setTimeout(showFinalScore, 1000);
+    }
+  }
+
+  function showFinalScore() {
+    questionNumberElement.style.display = 'none';
+    questionElement.style.display = 'none';
+    document.getElementById('choices').style.display = 'none';
+
+    let resultMessage = '';
+    if (score === 10) resultMessage = '경제시사의 신';
+    else if (score >= 7) resultMessage = '경제시사의 고수';
+    else if (score >= 3) resultMessage = '경제시사의 노력가';
+    else resultMessage = '경제시사의 입문자';
+
+    finalScoreElement.textContent = `결과: ${score}/10 (${resultMessage})`;
+    finalScoreElement.style.display = 'block';
+    redirectButton.style.display = 'block';
+  }
+
+  loadQuestion();
+</script>
+
+</body>
+</html>
